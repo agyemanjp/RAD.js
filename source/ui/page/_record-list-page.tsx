@@ -9,7 +9,7 @@ import { type RecordsFilterUI, stdRecordFilterCtors, type RecordViewerUI, stdRec
 
 /** Constructs basic page info out of input record-list page info */
 export function makeRecordListPage<T extends EntityRecordBase>(info: RecordListPageInfo<T>): PageInfo<RecordListPageArgs<T>> {
-	const { entityBasePath, title, relatedLinks, recordsCardUI, filterPanelUI } = info
+	const { entityBasePath, title, relatedLinks, recordsCardUI, filterPanelUI, icons } = info
 
 	const FilterUI: RecordsFilterUI<T> = ("component" in filterPanelUI
 		? filterPanelUI.component
@@ -39,7 +39,7 @@ export function makeRecordListPage<T extends EntityRecordBase>(info: RecordListP
 		links: () => relatedLinks,
 		ui: Promise.resolve((args) => {
 			// console.log(`Starting UI comp fx for list page "${title}", with args: ${stringify(args)}`)
-			const { records, filter, possibleValsDict, allowCreate, icons } = args
+			const { records, filter, possibleValsDict, allowCreate } = args
 
 			return <>
 				<div data-key="filters-&-data" style={{ gap: "0.25rem" }}>
@@ -147,6 +147,7 @@ export type RecordListPageInfo<T extends EntityRecordBase> = {
 	 * If not provided, a default algorithm will be used to generate the filtering panel ui
 	 */
 	filterPanelUI: (| { component: RecordsFilterUI<T> } | { createFromFields: FieldSpecs<T> })
+	icons: { addNew: Icon, search: Icon }
 }
 
 /** Dynamic args for record list page UI component */
@@ -155,5 +156,4 @@ export type RecordListPageArgs<T extends Rec> = {
 	filter?: ResultBasic<RecordFilter<T, "AND">>
 	possibleValsDict: PossibleValsDict<T>
 	allowCreate: boolean,
-	icons: { addNew: Icon, search: Icon }
 }
