@@ -7,11 +7,10 @@ import type { EntityRecordBase } from "../../schema"
 import type { RecordEditorUI, RecordViewerUI, PossibleValsDict } from "../record"
 import type { FieldSpecs } from "../field"
 import type { PageInfo } from "./base"
-import { icons } from "../_icons"
-
+import type { Icon } from "@agyemanjp/fxui/components"
 
 export function makeRecordPage<T extends EntityRecordBase>(pageInfo: RecordPageInfo<T>, getTitle: (_: T) => string): PageInfo<RecordPageArgs<T>> {
-	const { entityBasePath, newRecordTitle, editUI, viewUI } = pageInfo
+	const { entityBasePath, newRecordTitle, editUI, viewUI, icons } = pageInfo
 
 	return {
 		path: `${entityBasePath}-rec`,
@@ -75,7 +74,9 @@ export function makeRecordPage<T extends EntityRecordBase>(pageInfo: RecordPageI
 							fields: { width: "30%", minWidth: "15rem", flexGrow: "1", gap: "0.25em" },
 							fieldGroups: { gap: "0.25rem", borderTop: "0 solid silver" },
 							main: { gap: "1rem" }
-						}
+						},
+						trashIcon: icons.delete,
+						addNewIcon: icons.addNew
 					})
 				)
 				const ViewUI: RecordViewerUI<T> = ("component" in viewUI
@@ -161,14 +162,14 @@ export function makeRecordPage<T extends EntityRecordBase>(pageInfo: RecordPageI
 							switch (args.mode) {
 								case "create": return <EditUI
 									record={args.newRecord}
-									commands={[["Save", icons.Save, rec => action("insert", rec)]]}
+									commands={[["Save", icons.save, rec => action("insert", rec)]]}
 									possibleValsDict={args.possibleValsDict}
 								/>
 
 								case "edit": return (args.recordResult.type === "ok"
 									? <EditUI
 										record={args.recordResult.value}
-										commands={[["Save", icons.Save, rec => action("update", rec)]]}
+										commands={[["Save", icons.save, rec => action("update", rec)]]}
 										possibleValsDict={args.possibleValsDict}
 									/>
 
@@ -184,12 +185,12 @@ export function makeRecordPage<T extends EntityRecordBase>(pageInfo: RecordPageI
 									<h3 style={{ textAlign: "center", width: "25%" }}>Are you sure you want to delete this record?</h3>
 
 									<StackPanel itemsAlignH="center" itemsAlignV="center" style={{ gap: "1rem", width: "25%", border: "0 solid blue" }}>
-										<CommandBox data-key="delete-button" icon={icons.TrashBin2} style={{ width: "12rem", height: "2rem" }}
+										<CommandBox data-key="delete-button" icon={icons.delete} style={{ width: "12rem", height: "2rem" }}
 											onClick={(e) => { action("delete", {} as T) }}>
 											<span style={{ whiteSpace: "nowrap" }}>Yes, Delete</span>
 										</CommandBox>
 
-										<CommandBox data-key="cancel-button" icon={icons.CancelCircledThin} style={{ width: "12rem", height: "2rem" }}
+										<CommandBox data-key="cancel-button" icon={icons.cancel} style={{ width: "12rem", height: "2rem" }}
 											onClick={e => `location.href="${entityBasePath}/${recordId}"`}>
 											<span style={{ whiteSpace: "nowrap" }}>No, Cancel</span>
 										</CommandBox>
@@ -202,10 +203,10 @@ export function makeRecordPage<T extends EntityRecordBase>(pageInfo: RecordPageI
 										record={args.recordResult.value}
 										commands={[
 											args.mode !== "view"
-												? ["Edit", icons.EditThin, rec => action("insert", rec)]
+												? ["Edit", icons.edit, rec => action("insert", rec)]
 												: undefined,
 											args.mode === "view-can-edit-&-delete"
-												? ["Delete", icons.TrashBin2, rec => action("delete", rec)]
+												? ["Delete", icons.delete, rec => action("delete", rec)]
 												: undefined
 										]}
 										possibleValsDict={args.possibleValsDict}
@@ -253,13 +254,17 @@ export type RecordPageInfo<T extends Rec> = {
 		afterEdit?: string,
 		afterDelete?: string
 	}
+
+	icons: { addNew: Icon, save: Icon, edit: Icon, delete: Icon, cancel: Icon }
 }
 
 /** Dynamic args for record page UI component */
 export type RecordPageArgs<T extends Rec> = (
 	| { recordResult: ResultBasic<T>, mode: "view" | "view-can-edit" | "view-can-edit-&-delete" | "edit" | "delete" }
 	| { newRecord: Partial<T>, mode: "create" }
-) & { possibleValsDict: PossibleValsDict<T> }
+) & {
+	possibleValsDict: PossibleValsDict<T>
+}
 
 
 /** Collects record editor input values and uses them to create a record. Runs on client */

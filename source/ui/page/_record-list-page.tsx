@@ -1,4 +1,4 @@
-import { createElement, Fragment, StackPanel, View, GridPanel, type CSSProperties, type LinkInfo } from "@agyemanjp/fxui"
+import { createElement, Fragment, StackPanel, View, GridPanel, type CSSProperties, type LinkInfo, type Icon } from "@agyemanjp/fxui"
 import { rollupFilters, type Rec, type RecordFilter, type ResultBasic } from "@agyemanjp/standard"
 
 import type { EntityRecordBase } from "../../schema"
@@ -6,8 +6,6 @@ import { getViewUrl, getCreateUrl } from "../../_routing"
 import type { PageInfo } from "./base"
 import type { FieldSpecs } from "../field"
 import { type RecordsFilterUI, stdRecordFilterCtors, type RecordViewerUI, stdRecordViewCtors, type StdCardArgs, type PossibleValsDict } from "../record"
-import { icons } from "../_icons"
-
 
 /** Constructs basic page info out of input record-list page info */
 export function makeRecordListPage<T extends EntityRecordBase>(info: RecordListPageInfo<T>): PageInfo<RecordListPageArgs<T>> {
@@ -41,7 +39,7 @@ export function makeRecordListPage<T extends EntityRecordBase>(info: RecordListP
 		links: () => relatedLinks,
 		ui: Promise.resolve((args) => {
 			// console.log(`Starting UI comp fx for list page "${title}", with args: ${stringify(args)}`)
-			const { records, filter, possibleValsDict, allowCreate } = args
+			const { records, filter, possibleValsDict, allowCreate, icons } = args
 
 			return <>
 				<div data-key="filters-&-data" style={{ gap: "0.25rem" }}>
@@ -57,7 +55,7 @@ export function makeRecordListPage<T extends EntityRecordBase>(info: RecordListP
 
 						<FilterUI
 							filter={filter ? filter.type === "ok" ? filter.value : undefined : undefined}
-							applyCommand={["Apply", icons.Search, (atomicFilters) => {
+							applyCommand={["Apply", icons.search, (atomicFilters) => {
 								return Promise
 									.resolve(atomicFilters)
 									.then(rollupFilters)
@@ -104,7 +102,7 @@ export function makeRecordListPage<T extends EntityRecordBase>(info: RecordListP
 											itemsAlignV="center"
 											orientation="vertical"
 											style={{ border: "thin solid silver", ...style }}>
-											<icons.PlusThin style={{ height: "40%" }} />Add New
+											<icons.addNew style={{ height: "40%" }} />Add New
 										</StackPanel>
 									</a>
 
@@ -156,5 +154,6 @@ export type RecordListPageArgs<T extends Rec> = {
 	records: ResultBasic<T[]>,
 	filter?: ResultBasic<RecordFilter<T, "AND">>
 	possibleValsDict: PossibleValsDict<T>
-	allowCreate: boolean
+	allowCreate: boolean,
+	icons: { addNew: Icon, search: Icon }
 }

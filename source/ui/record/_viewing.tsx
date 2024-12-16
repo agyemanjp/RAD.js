@@ -1,12 +1,10 @@
 // import assert from "assert"
 import { except, filter, hasValue, initialCaps, isObject, type Predicate, type Rec, spaceCase, type TypeGuard } from "@agyemanjp/standard"
-import { Fragment, type CSSProperties, View, createElement, StackPanel, type ViewProps, type MediaItem, MediaSetUI } from "@agyemanjp/fxui"
+import { Fragment, type CSSProperties, View, createElement, StackPanel, type ViewProps, type MediaItem, MediaSetUI, type Icon } from "@agyemanjp/fxui"
 
 import type { RecordViewerUI } from "./common"
 import { type FieldSpec, type FieldSpecs, getOrderedNamedFieldSpecs, type MediaField, type TextField, type ToggleField } from "../field/_spec"
 import { stdFieldUICtor } from "../field/_ui"
-import { type Icon } from "../_icons"
-
 
 export const stdRecordViewCtors = {
 	cardOfTextAndImages: function <T extends Rec>(args

@@ -1,11 +1,10 @@
 import { assert, except, filter, hasValue, initialCaps, isObject, type Predicate, type Rec, spaceCase, type TypeGuard } from "@agyemanjp/standard"
 import { createElement, Fragment, StackPanel, MediaSetUI, InputChoiceButtons, DropdownChoiceInput, SwitchUI, View, InputText, CmdButton } from "@agyemanjp/fxui"
-import type { CSSProperties, MediaItem, ViewProps } from "@agyemanjp/fxui"
+import type { CSSProperties, Icon, MediaItem, ViewProps } from "@agyemanjp/fxui"
 
 import type { RecordEditorUI } from "./common"
 import { type FieldSpec, type FieldSpecs, getOrderedNamedFieldSpecs, type MediaField, type TextField, type ToggleField } from "../field/_spec"
 import { stdFieldUICtor } from "../field/_ui"
-import { icons } from "../_icons"
 
 export const stdRecordEditorCtors = {
 	/** Form of field UIs (one for each field in the input fieldSpecs arg) laid out according to the layout arg */
@@ -31,10 +30,12 @@ export const stdRecordEditorCtors = {
 
 				/** Style applied to entire container */
 				main?: CSSProperties
-			}
+			},
+			addNewIcon: Icon,
+			trashIcon: Icon
 		} & Pick<ViewProps, "layout" | "orientation" | "itemsAlignH" | "itemsAlignV">): RecordEditorUI<T> {
 
-		const { fieldSpecs, layout, labelPosition, orientation, itemsAlignH, itemsAlignV, styles } = args
+		const { fieldSpecs, layout, labelPosition, orientation, itemsAlignH, itemsAlignV, styles, addNewIcon, trashIcon } = args
 		const { main: styleStatic, fields: fieldStyle, fieldGroups: fieldGroupStyle, labels: labelStyle, values: valueStyle } = styles
 		// console.log(`Editor field specs keys: ${Object.keys(fieldSpecs)}`)
 
@@ -193,8 +194,8 @@ export const stdRecordEditorCtors = {
 								onValueChanged={onValChangeCtor(fieldName)}
 								editing={{
 									maxItems: fieldSpec.maxItemsCount,
-									addNewIcon: icons.PlusThin,
-									trashIcon: icons.TrashBin2
+									addNewIcon,
+									trashIcon
 								}}
 								style={{
 									width: "100%",

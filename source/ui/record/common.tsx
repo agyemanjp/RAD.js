@@ -1,6 +1,5 @@
-import type { Component, CSSProperties } from "@agyemanjp/fxui"
+import type { Component, CSSProperties, Icon } from "@agyemanjp/fxui"
 import type { FilterSingle, Rec, RecordFilter, StdError } from "@agyemanjp/standard"
-import type { Icon } from "../_icons"
 
 // export type RecordUI<T extends Rec> = Component<{ record: T | "new", style?: CSSProperties, children?: never }>
 export type RecordViewerUI<T extends Rec> = Component<{

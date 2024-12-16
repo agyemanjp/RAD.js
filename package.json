@@ -14,11 +14,12 @@
 		"rapid",
 		"application",
 		"development",
-		"opinionated"
+		"opinionated",
+		"typescript"
 	],
 	"author": "James A. Prempeh",
 	"dependencies": {
-		"@agyemanjp/fxui": "0.0.3",
+		"@agyemanjp/fxui": "0.0.4",
 		"@agyemanjp/standard": "6.0.1",
 		"@agyemanjp/storage": "2.0.2",
 		"bcryptjs": "2.4.3",

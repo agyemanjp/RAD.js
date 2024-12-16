@@ -1,22 +1,22 @@
-import { type LinkInfo, StackPanel, createElement } from "@agyemanjp/fxui"
+import { type Icon, type LinkInfo, StackPanel, createElement } from "@agyemanjp/fxui"
 import { httpToStdErrorCodeMap, type StatusCode } from "@agyemanjp/http"
 import { ensureStartsWith, type StdError } from "@agyemanjp/standard"
 
 import type { PageInfo } from "./base"
 import type { FieldSpecs } from "../field"
 import { stdRecordEditorCtors } from "../record"
-import { icons } from "../_icons"
 
 export function makeAuthPage(argsForFactory
 	: {
-		fields: FieldSpecs<AuthProps>
+		fields: FieldSpecs<AuthPageProps>
 		actionUrl: string,
 		path: string,
 		title: string,
 		links: LinkInfo[],
-	}): PageInfo<AuthProps> {
+		icons: { action: Icon, addNew: Icon, trash: Icon }
+	}): PageInfo<AuthPageProps> {
 
-	const { path, title, links, actionUrl, fields } = argsForFactory
+	const { path, title, links, actionUrl, fields, icons } = argsForFactory
 
 	return {
 		path,
@@ -24,7 +24,7 @@ export function makeAuthPage(argsForFactory
 		links: () => links,
 		ui: Promise.resolve((args) => {
 			const { redirectUrl, previousError, id, "data-peer-id": peerId, children, ...authParams } = args
-			const EditorInputs = stdRecordEditorCtors.fieldEditorsGroup<AuthProps>({
+			const EditorInputs = stdRecordEditorCtors.fieldEditorsGroup<AuthPageProps>({
 				fieldSpecs: fields,
 				layout: StackPanel,
 				orientation: "vertical",
@@ -37,6 +37,8 @@ export function makeAuthPage(argsForFactory
 					main: { width: "100%", gap: "0.75em" }
 				},
 				labelPosition: "top",
+				addNewIcon: icons.addNew,
+				trashIcon: icons.trash
 				// itemStyle: { width: "100%", gap: "0.15em" }
 			})
 
@@ -44,7 +46,7 @@ export function makeAuthPage(argsForFactory
 				<EditorInputs
 					record={authParams}
 					commands={[
-						["Submit", icons.Login, (authInfo) => {
+						["Submit", icons.action, (authInfo) => {
 							return fetch(ensureStartsWith(actionUrl, "/"), {
 								method: "POST",
 								body: JSON.stringify({
@@ -76,10 +78,10 @@ export function makeAuthPage(argsForFactory
 			</StackPanel>
 		}),
 		kind: "auth"
-	} satisfies PageInfo<AuthProps>
+	} satisfies PageInfo<AuthPageProps>
 }
 
-export type AuthProps = {
+export type AuthPageProps = {
 	emailAddress?: string
 	password?: string
 	remember?: boolean
