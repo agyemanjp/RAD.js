@@ -22,10 +22,12 @@ export type FieldSpecs<T extends Rec<Primitive>> = { [k in keyof T]?: FieldSpec<
 
 /** Specs that define fundamental UI-related properties of a field */
 export type FieldSpec<T extends Primitive> = (
-	T extends string
-	? (TextField | EmailField | PasswordField | AddressField | ChoiceField<T> | MultiChoiceField<T> | DateField | MediaField)
+	T extends Date
+	? (| DateField)
+	: T extends string
+	? (TextField | EmailField | PasswordField | AddressField | ChoiceField<T> | MultiChoiceField<T> | MediaField)
 	: T extends number
-	? (NumericField | TimeOfDayField)
+	? (NumericField | TimeOfDayField | ChoiceField<T> | MultiChoiceField<T>)
 	: T extends boolean
 	? (ToggleField)
 	: never
@@ -39,12 +41,12 @@ export type ToggleField = FieldSpecBase & {
 	defaultValue: boolean // initial value
 }
 /** Field for choosing a value from two or more values */
-export type ChoiceField<T extends string = string> = FieldSpecBase<T> & {
+export type ChoiceField<T extends Primitive = string> = FieldSpecBase<T> & {
 	type: "choice",
 	possibleVals: "get-from-provider" | T[] | { value: T, title: string }[],
 }
 /** Field for choosing multiple values (stored & read as comma-separated values) from two or more values. */
-export type MultiChoiceField<T extends string = string> = FieldSpecBase<T> & {
+export type MultiChoiceField<T extends Primitive = string> = FieldSpecBase<T> & {
 	type: "multi-choice",
 	possibleVals: "get-from-provider" | T[] | { value: T, title: string }[],
 }
