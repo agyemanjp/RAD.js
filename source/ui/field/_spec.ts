@@ -1,12 +1,12 @@
 import type { InputHTMLAttributes, CSSProperties } from "@agyemanjp/fxui"
-import { type Rec, type Primitive, createRanker, hasValue, Vector, Tuple, isArray } from "@agyemanjp/standard"
+import { type Rec, createRanker, hasValue, Vector, Tuple, isArray, type WeekDayName } from "@agyemanjp/standard"
 
 import type { Validator } from "./_validators"
-
+import type { Primitive } from "../base"
 
 /** Gets ordered named field specs */
-export function getOrderedNamedFieldSpecs<T extends Rec>(fields: FieldSpecs<T>): Vector<FieldSpec<T[keyof T]> & { fieldName: string }> {
-	return isArray(fields)
+export function getOrderedNamedFieldSpecs<T extends Rec<Primitive>>(fields: FieldSpecs<T>) {
+	return (isArray(fields)
 		? new Vector(fields).map(_ => ({ ..._[1], fieldName: _[0] as string }))
 		: (new Vector(Object.entries(fields))
 			.map((_: [keyof T, undefined | FieldSpec<T[keyof T]>]) => ({ fieldName: _[0], field: _[1] }))
@@ -14,21 +14,21 @@ export function getOrderedNamedFieldSpecs<T extends Rec>(fields: FieldSpecs<T>):
 			.sort(createRanker(_ => _.field.ordinal ?? 0))
 			.map(_ => ({ ..._.field, fieldName: _.fieldName }) as FieldSpec<T[keyof T]> & { fieldName: string })
 		)
+	) as any as Vector<FieldSpec<any> & { fieldName: string }>
 }
 
 /** Record of field specs for a record type T */
-export type FieldSpecs<T extends Rec> = { [k in keyof T]?: FieldSpec<T[k]> } | Tuple<keyof T, FieldSpec<T[keyof T]>>[]
+export type FieldSpecs<T extends Rec<Primitive>> = { [k in keyof T]?: FieldSpec<T[k]> } | Tuple<keyof T, FieldSpec<T[keyof T]>>[]
 
 /** Specs that define fundamental UI-related properties of a field */
-export type FieldSpec<T> = (
-	| NumericField
-	| TextField
-	| ToggleField
-	| ChoiceField<T>
-	| EmailField
-	| PasswordField
-	| MediaField
-	// | HiddenField<T>
+export type FieldSpec<T extends Primitive> = (
+	T extends string
+	? (TextField | EmailField | PasswordField | AddressField | ChoiceField<T> | MultiChoiceField<T> | DateField | MediaField)
+	: T extends number
+	? (NumericField | TimeOfDayField)
+	: T extends boolean
+	? (ToggleField)
+	: never
 )
 
 /** Field for choosing a boolean value, as a toggle 
@@ -39,14 +39,17 @@ export type ToggleField = FieldSpecBase & {
 	defaultValue: boolean // initial value
 }
 /** Field for choosing a value from two or more values */
-export type ChoiceField<T = Primitive> = FieldSpecBase & {
+export type ChoiceField<T extends string = string> = FieldSpecBase<T> & {
 	type: "choice",
 	possibleVals: "get-from-provider" | T[] | { value: T, title: string }[],
-	defaultValue?: T
-	isRequired?: boolean
 }
-/** Field for selecting media */
-export type MediaField = FieldSpecBase & {
+/** Field for choosing multiple values (stored & read as comma-separated values) from two or more values. */
+export type MultiChoiceField<T extends string = string> = FieldSpecBase<T> & {
+	type: "multi-choice",
+	possibleVals: "get-from-provider" | T[] | { value: T, title: string }[],
+}
+/** Field for selecting media, stored & read as JSON formatted string of arrays of media items */
+export type MediaField = FieldSpecBase<string> & {
 	type: "media",
 
 	/** Maximum size of individual media items accepted by field */
@@ -61,54 +64,65 @@ export type MediaField = FieldSpecBase & {
 	/** Comma-separated list of media types accepted, e.g., 'image/*,video/*,etc' */
 	mediaTypesAllowed?: InputHTMLAttributes<HTMLInputElement>["accept"]
 }
-export type NumericField = FieldSpecBase & {
-	type: "number"
-	isRequired?: boolean
-	defaultValue?: number
-	// possibleValues: number[] | { value: number, title: string }[],
+/** Field for a single image, stored & read as a uRL string */
+export type ImageField = FieldSpecBase<string> & {
+	type: "image",
 
-	/** Validators (in addition to the type-based defaults) */
-	validators?: Validator<number>[]
-	/** Formatter (overrides the type-based default */
-	formatter?: (val: number) => string
+	/** Maximum size of image file accepted */
+	maxItemSizeKb?: number
 }
-export type TextField = FieldSpecBase & {
+export type NumericField = FieldSpecBase<number> & {
+	type: "number"
+}
+/** Date field based on ISO 8601 (yyyy-mm-dd) string values */
+export type DateField = FieldSpecBase<string> & {
+	type: "date"
+}
+/** Date-time-stamp field based Unix/JS epochs */
+export type DateTimeStampField = FieldSpecBase<number> & {
+	type: "date-time-stamp"
+}
+/** Time field based on number of minutes since start of day */
+export type TimeOfDayField = FieldSpecBase<number> & {
+	type: "time-of-day"
+}
+export type TextField = FieldSpecBase<string> & {
 	type: "text"
-	isRequired?: boolean
-	defaultValue?: string
-
-	/** Validators (in addition to the type-based defaults) */
-	validators?: Validator<string>[]
-	/** Formatter (overrides the type-based default */
-	formatter?: (val: string) => string,
-
 	isLong?: boolean
 }
-export type PasswordField = FieldSpecBase & {
+export type PasswordField = FieldSpecBase<string> & {
 	type: "password"
-	/** Validators (in addition to type-based defaults) */
-	validators?: Validator<string>[]
-	/** Formatter (overrides the type-based default */
-	formatter?: (val: string) => string
 }
-export type EmailField = FieldSpecBase & {
+export type EmailField = FieldSpecBase<string> & {
 	type: "email"
-	/** Validators (in addition to type-based defaults) */
-	validators?: Validator<string>[]
-	/** Formatter (overrides the type-based default */
-	formatter?: (val: string) => string
 }
-// export type HiddenField<T = any> = FieldSpecBase & {
-// 	type: "hidden"
-// 	getDefaultValue?: () => T
-// }
+export type AddressField = FieldSpecBase<string> & {
+	type: "address"
+}
 
-type FieldSpecBase = {
+/*export type DayOfWeekField = FieldSpecBase<WeekDayName> & {
+	type: "day-of-week"
+}*/
+
+export type FieldSpecBase<T extends Primitive = Primitive> = {
 	/** Optional name that overrides the field key in a FieldSpecs record */
 	customName?: string,
 
 	/** Optional title for the field, used for captions, etc */
 	title?: string,
+
+	isRequired?: boolean
+
+	// possibleValues: T[] | { value: T, title: string }[],
+
+	/** Optional default value */
+	defaultValue?: T
+
+	/** Validators (in addition to the type-based defaults) */
+	validators?: Validator<T>[]
+
+	/** Formatter (overrides the type-based default */
+	formatter?: (val: T) => string,
 
 	/** Ordinal position of this field for display */
 	ordinal?: number

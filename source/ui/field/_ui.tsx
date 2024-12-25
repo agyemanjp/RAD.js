@@ -1,8 +1,8 @@
 import { createElement, Fragment, StackPanel, type Component, type HtmlProps, type CSSProperties, type UIElement } from "@agyemanjp/fxui"
 // import { Validator } from "./_validators"
 
-/** Returns a function that receives a value ui and wraps a it in a container with a caption label attached. Some members of args 
- * are optional since they could be embedded in the value UI directy. 
+/** Returns a function that receives a value ui and wraps a it in a container with a caption label attached. 
+ * Some members of args are optional since they could be embedded in the value UI directy. 
  * The value UI could be anything that renders a field value, e.g., input, view, etc. 
  */
 export function stdFieldUICtor(args: Pick<FieldUIArgs, | "title" | "labelPosition" | "style" | "labelStyle">) {

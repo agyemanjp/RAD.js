@@ -12,8 +12,8 @@ export type RecordViewerUI<T extends Rec> = Component<{
 export type RecordEditorUI<T extends Rec> = Component<{
 	/** The record to edit */
 	record: Partial<T>,
-	// onRecordChanged?: (args: { fieldName: string, newValue: any }) => void
 	commands: (CommandInfo<T> | undefined)[]
+	// onRecordChanged?: (args: { fieldName: string, newValue: any }) => void
 	lastError?: string
 	possibleValsDict: PossibleValsDict<T>
 	style?: CSSProperties
@@ -30,8 +30,11 @@ export type RecordsFilterUI<T extends Rec> = Component<{
 
 export type PossibleValsDict<T extends Rec> = { [k in keyof T]?: { value: string, title: string }[] }
 
-export type CommandInfo<T> = [caption: string, icon: Icon | undefined, action: (record: T) => Promise<void | StdError>]
-
+export type CommandInfo<T> = [
+	caption: string,
+	icon: Icon | undefined,
+	action: (record: T) => Promise<void | StdError>
+]
 
 
 /** Get the effective name of an input element, by combining its field name with a form id for 

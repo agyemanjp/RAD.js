@@ -8,6 +8,7 @@ import type { RecordEditorUI, RecordViewerUI, PossibleValsDict } from "../record
 import type { FieldSpecs } from "../field"
 import type { PageInfo } from "./base"
 import type { Icon } from "@agyemanjp/fxui/components"
+import type { Primitive } from "../base"
 
 export function makeRecordPage<T extends EntityRecordBase>(pageInfo: RecordPageInfo<T>, getTitle: (_: T) => string): PageInfo<RecordPageArgs<T>> {
 	const { entityBasePath, newRecordTitle, editUI, viewUI, icons } = pageInfo
@@ -19,7 +20,7 @@ export function makeRecordPage<T extends EntityRecordBase>(pageInfo: RecordPageI
 			? newRecordTitle
 			: args.recordResult.type === "ok"
 				? getTitle(args.recordResult.value)
-				: `Data could not be retrived: ${args.recordResult.error.errCode}`
+				: `Data for generating title could not be retrived: ${args.recordResult.error.errCode}`
 		),
 
 		links: (args) => {
@@ -59,7 +60,7 @@ export function makeRecordPage<T extends EntityRecordBase>(pageInfo: RecordPageI
 			.then(_modules => {
 				const { getIdUnique } = _modules[0]
 				const { createElement, Fragment, StackPanel, GridPanel, CmdButton: CommandBox } = _modules[1]
-				const { stdRecordEditorCtors, stdRecordViewCtors } = _modules[2]
+				const { recordEditorGenerators: stdRecordEditorCtors, stdRecordViewCtors } = _modules[2]
 
 				const EditUI: RecordEditorUI<T> = ("component" in editUI
 					? editUI.component
@@ -69,7 +70,7 @@ export function makeRecordPage<T extends EntityRecordBase>(pageInfo: RecordPageI
 						orientation: "horizontal",
 						labelPosition: "top",
 						styles: {
-							values: { width: "100%" },
+							inputs: { width: "100%" },
 							labels: { width: "auto", },
 							fields: { width: "30%", minWidth: "15rem", flexGrow: "1", gap: "0.25em" },
 							fieldGroups: { gap: "0.25rem", borderTop: "0 solid silver" },
@@ -222,7 +223,7 @@ export function makeRecordPage<T extends EntityRecordBase>(pageInfo: RecordPageI
 }
 
 /** Specs used to construct a page that manages a record */
-export type RecordPageInfo<T extends Rec> = {
+export type RecordPageInfo<T extends Rec<Primitive>> = {
 	entityBasePath: string
 
 	/** Title for record type to use when creating new record */
@@ -243,6 +244,7 @@ export type RecordPageInfo<T extends Rec> = {
 		| { createFromFields: FieldSpecs<T> }
 	)
 
+	/** Optional generator of URLs for various operations. If any such URL is not provided, a default is used */
 	urls?: (id: string) => {
 		editPage?: string
 

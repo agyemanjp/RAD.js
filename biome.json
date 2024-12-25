@@ -9,12 +9,17 @@
 			"correctness": {
 				"useJsxKeyInIterable": "off"
 			},
+			"suspicious": {
+				"noExplicitAny": "warn",
+				"noConfusingVoidType": "off"
+			},
 			"complexity": {
 				"useLiteralKeys": "off",
 				"noBannedTypes": "off"
 			},
 			"a11y": {
-				"noSvgWithoutTitle": "off"
+				"noSvgWithoutTitle": "off",
+				"useAltText": "warn"
 			},
 			"style": {
 				"noCommaOperator": "off"

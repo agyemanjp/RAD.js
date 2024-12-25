@@ -4,7 +4,7 @@ import { ensureStartsWith, type StdError } from "@agyemanjp/standard"
 
 import type { PageInfo } from "./base"
 import type { FieldSpecs } from "../field"
-import { stdRecordEditorCtors } from "../record"
+import { recordEditorGenerators } from "../record"
 
 export function makeAuthPage(argsForFactory
 	: {
@@ -24,14 +24,14 @@ export function makeAuthPage(argsForFactory
 		links: () => links,
 		ui: Promise.resolve((args) => {
 			const { redirectUrl, previousError, id, "data-peer-id": peerId, children, ...authParams } = args
-			const EditorInputs = stdRecordEditorCtors.fieldEditorsGroup<AuthPageProps>({
+			const EditorInputs = recordEditorGenerators.fieldEditorsGroup<AuthPageProps>({
 				fieldSpecs: fields,
 				layout: StackPanel,
 				orientation: "vertical",
 				itemsAlignH: "center",
 				styles: {
 					labels: { width: "100%" },
-					values: { width: "100%" },
+					inputs: { width: "100%" },
 					fields: { gap: "0.1em", width: "100%" },
 					fieldGroups: {},
 					main: { width: "100%", gap: "0.75em" }

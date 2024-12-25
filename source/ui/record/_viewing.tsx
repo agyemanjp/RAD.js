@@ -3,15 +3,16 @@ import { except, filter, hasValue, initialCaps, isObject, type Predicate, type R
 import { Fragment, type CSSProperties, View, createElement, StackPanel, type ViewProps, type MediaItem, MediaSetUI, type Icon } from "@agyemanjp/fxui"
 
 import type { RecordViewerUI } from "./common"
-import { type FieldSpec, type FieldSpecs, getOrderedNamedFieldSpecs, type MediaField, type TextField, type ToggleField } from "../field/_spec"
+import { type FieldSpec, type FieldSpecBase, type FieldSpecs, getOrderedNamedFieldSpecs, type MediaField, type TextField, type ToggleField } from "../field/_spec"
 import { stdFieldUICtor } from "../field/_ui"
+import type { Primitive } from "../base"
 
 export const stdRecordViewCtors = {
-	cardOfTextAndImages: function <T extends Rec>(args
+	cardOfTextAndImages: <T extends Rec<Primitive>>(args
 		: {
 			mapper: (x: T) => StdCardArgs,
 			layout: StdCardLayout,
-		}): RecordViewerUI<T> {
+		}): RecordViewerUI<T> => {
 
 		switch (args.layout) {
 			case "textOverImage": return (props) => {
@@ -64,7 +65,7 @@ export const stdRecordViewCtors = {
 		}
 	},
 
-	listOfFieldUIs: function <T extends Rec>(args
+	listOfFieldUIs: <T extends Rec<Primitive>>(args
 		: {
 			fieldSpecs: FieldSpecs<T>
 			fieldChangeHandlers?: { [k in keyof T]?: () => string },
@@ -88,7 +89,7 @@ export const stdRecordViewCtors = {
 				/** Style applied to entire container */
 				main?: CSSProperties
 			},
-		}): RecordViewerUI<T> {
+		}): RecordViewerUI<T> => {
 
 		const { fieldSpecs, layout, labelPosition, orientation, styles } = args
 		const { main: styleStatic, fields: fieldStyle, fieldGroups: fieldGroupStyle, labels: labelStyle, values: valueStyle } = styles
@@ -102,7 +103,7 @@ export const stdRecordViewCtors = {
 		const remainderFieldSpecs = [...except(orderedNamedFieldSpecs, longTextFieldSpecs, mediaFieldSpecs, toggleFieldSpecs)]
 		// console.log(`RemainderFieldSpecs names: ${map(remainderFieldSpecs, _ => _.fieldName)}`)
 
-		function specsFilter<F extends FieldSpec<T>>(predicate: Predicate<FieldSpec<T>, undefined>) {
+		function specsFilter<F extends FieldSpecBase<any>>(predicate: Predicate<FieldSpec<any>, undefined>) {
 			const guard: TypeGuard<any, F & { fieldName: string }> = (spec): spec is F & { fieldName: string } => {
 				return predicate(spec, undefined)
 			}
@@ -135,7 +136,7 @@ export const stdRecordViewCtors = {
 								const possibleValuesNormalized = (fieldSpec.possibleVals === "get-from-provider"
 									? (possibleVals ?? [])
 									: fieldSpec.possibleVals.map(v => isObject(v)
-										? { value: String(v.value), title: v.title }
+										? { value: String(v["value"]), title: v["title"] }
 										: { value: String(v), title: String(v) }
 									)
 								)
@@ -150,10 +151,10 @@ export const stdRecordViewCtors = {
 
 								return stdFieldUI(<span style={valueStyle}>{effectiveFieldValue}</span>)
 							}
-							case "text": /*assert((fieldSpec.isLong ?? false) === false)*/
-							case "email":
-							case "password":
-							case "number":
+							// case "text": /*assert((fieldSpec.isLong ?? false) === false)*/
+							// case "email":
+							// case "password":
+							// case "number":
 							default: return stdFieldUI(<span style={valueStyle}>{strValue}</span>)
 						}
 					}}

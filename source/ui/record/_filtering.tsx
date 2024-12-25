@@ -1,12 +1,13 @@
-import { createElement, type CSSProperties, View, StackPanel, type ViewProps, SwitchUI, DropdownChoiceInput, InputChoiceButtons, type InputHTMLAttributes, type ComponentElement, CmdButton, InputText } from "@agyemanjp/fxui"
+import { createElement, type CSSProperties, View, StackPanel, type ViewProps, SwitchUI, DropdownChoiceInput, InputChoiceButtons, type InputHTMLAttributes, type ComponentElement, CmdButton, InputText, normalizedChoices } from "@agyemanjp/fxui"
 import { type Rec, isObject, initialCaps, spaceCase, flattenFilters, type FilterSingle } from "@agyemanjp/standard"
 
 import { type RecordsFilterUI } from "./common"
 import { type FieldSpecs, getOrderedNamedFieldSpecs } from "../field/_spec"
 import { stdFieldUICtor } from "../field/_ui"
+import type { Primitive } from "../base"
 
 export const stdRecordFilterCtors = {
-	listOfFieldUIs: function <T extends Rec>(args
+	listOfFieldUIs: function <T extends Rec<Primitive>>(args
 		: {
 			fieldSpecs: FieldSpecs<T>
 
@@ -64,10 +65,7 @@ export const stdRecordFilterCtors = {
 								const possibleVals = possibleValsDict ? possibleValsDict[fieldName] : undefined
 								const possibleValuesNormalized = (fieldSpec.possibleVals === "get-from-provider"
 									? (possibleVals ?? [])
-									: fieldSpec.possibleVals.map(v => isObject(v)
-										? { value: String(v.value), title: v.title }
-										: { value: String(v), title: String(v) }
-									)
+									: normalizedChoices(fieldSpec.possibleVals)
 								)
 								// const possibleValueStrings = possibleValuesNormalized.map(v => v.value)
 

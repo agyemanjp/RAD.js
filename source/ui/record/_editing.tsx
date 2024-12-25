@@ -1,46 +1,49 @@
 import { assert, except, filter, hasValue, initialCaps, isObject, type Predicate, type Rec, spaceCase, type TypeGuard } from "@agyemanjp/standard"
-import { createElement, Fragment, StackPanel, MediaSetUI, InputChoiceButtons, DropdownChoiceInput, SwitchUI, View, InputText, CmdButton } from "@agyemanjp/fxui"
+import { createElement, Fragment, StackPanel, MediaSetUI, InputChoiceButtons, DropdownChoiceInput, SwitchUI, View, InputText, CmdButton, InputMultiChoiceButtons } from "@agyemanjp/fxui"
 import type { CSSProperties, Icon, MediaItem, ViewProps } from "@agyemanjp/fxui"
 
 import type { RecordEditorUI } from "./common"
-import { type FieldSpec, type FieldSpecs, getOrderedNamedFieldSpecs, type MediaField, type TextField, type ToggleField } from "../field/_spec"
+import { type AddressField, type ChoiceField, type DateField, type DateTimeStampField, type EmailField, type FieldSpec, type FieldSpecBase, type FieldSpecs, getOrderedNamedFieldSpecs, type MediaField, type MultiChoiceField, type NumericField, type PasswordField, type TextField, type ToggleField } from "../field/_spec"
 import { stdFieldUICtor } from "../field/_ui"
+import type { Primitive } from "../base"
 
-export const stdRecordEditorCtors = {
-	/** Form of field UIs (one for each field in the input fieldSpecs arg) laid out according to the layout arg */
-	fieldEditorsGroup: function <T extends Rec>(args
+export const recordEditorGenerators = {
+	/** Field UIs (one for each field in input field specs arg) laid out according to layout arg */
+	fieldEditorsGroup: <T extends Rec<Primitive>>(args
 		: {
 			fieldSpecs: FieldSpecs<T>
-			fieldChangeHandlers?: { [k in keyof T]?: () => string },
+			// fieldChangeHandlers?: { [k in keyof T]?: () => string },
 			labelPosition: "top" | "left" | "bottom" | "off"
 			styles: {
-				/** Style applied to each field value */
-				values?: CSSProperties,
+				/** Style applied to each field input */
+				inputs?: CSSProperties,
 
 				/** Style applied to each field label */
 				labels?: CSSProperties,
 
-				/** Style applied to each field */
-				fields?: ViewProps["itemStyle"]
+				/** Style applied to each field container */
+				fields?: CSSProperties
 
-				/** Style applied to each field group */
-				fieldGroups?: ViewProps["itemStyle"]
+				/** Style applied to each group of field containers */
+				fieldGroups?: CSSProperties
 
-				saveButton?: CSSProperties
+				cmdItems?: CSSProperties
+				cmdsContainer?: CSSProperties
+
 
 				/** Style applied to entire container */
 				main?: CSSProperties
 			},
 			addNewIcon: Icon,
 			trashIcon: Icon
-		} & Pick<ViewProps, "layout" | "orientation" | "itemsAlignH" | "itemsAlignV">): RecordEditorUI<T> {
+		} & Pick<ViewProps, "layout" | "orientation" | "itemsAlignH" | "itemsAlignV">): RecordEditorUI<T> => {
 
 		const { fieldSpecs, layout, labelPosition, orientation, itemsAlignH, itemsAlignV, styles, addNewIcon, trashIcon } = args
-		const { main: styleStatic, fields: fieldStyle, fieldGroups: fieldGroupStyle, labels: labelStyle, values: valueStyle } = styles
+		const { main: styleStatic, cmdItems: cmdItemStyle, cmdsContainer: cmdsContainerStyle, fields: fieldStyle, fieldGroups: fieldGroupStyle, labels: labelStyle, inputs: valueStyle } = styles
 		// console.log(`Editor field specs keys: ${Object.keys(fieldSpecs)}`)
 
 		const orderedNamedFieldSpecs = getOrderedNamedFieldSpecs(fieldSpecs)
-		const specsFilter = <F extends FieldSpec<T>>(predicate: Predicate<FieldSpec<T>, undefined>) => {
+		const specsFilter = <F extends FieldSpecBase<any>>(predicate: Predicate<FieldSpec<T[keyof T]>, undefined>) => {
 			const guard: TypeGuard<any, F & { fieldName: string }> =
 				(spec): spec is F & { fieldName: string } => predicate(spec, undefined)
 			return filter(orderedNamedFieldSpecs, ["by-typeguard", guard] as const)
@@ -48,11 +51,18 @@ export const stdRecordEditorCtors = {
 		const longTextFieldSpecs = [...specsFilter<TextField>(spec => spec.type === "text" && spec.isLong === true)]
 		const mediaFieldSpecs = [...specsFilter<MediaField>(spec => spec.type === "media")]
 		const toggleFieldSpecs = [...specsFilter<ToggleField>(spec => spec.type === "toggle")]
-		const otherFieldSpecs = [...except(orderedNamedFieldSpecs, longTextFieldSpecs, mediaFieldSpecs, toggleFieldSpecs)]
+		const otherFieldSpecs = [
+			...except(orderedNamedFieldSpecs,
+				longTextFieldSpecs,
+				mediaFieldSpecs,
+				toggleFieldSpecs)
+		] as ((TextField | ChoiceField | MultiChoiceField | EmailField | PasswordField | AddressField | NumericField | DateField | DateTimeStampField) & {
+			fieldName: string
+		})[]
 		// const hiddenFieldSpecs = [...specsFilter<HiddenField>(spec => spec.type === "hidden")]
 		// console.log(`RemainderFieldSpecs names: ${map(remainderFieldSpecs, _ => _.fieldName)}`)
 
-		const getStdFieldUI = (field: FieldSpec<T[keyof T]> & { fieldName: string }) => stdFieldUICtor({
+		const getStdFieldUI = (field: FieldSpec<any> & { fieldName: string }) => stdFieldUICtor({
 			title: field.title ?? initialCaps(spaceCase(field.fieldName)),
 			labelPosition,
 			labelStyle,
@@ -78,11 +88,12 @@ export const stdRecordEditorCtors = {
 					sourceData={otherFieldSpecs}
 					itemTemplate={({ value: fieldSpec, index }) => {
 						const { fieldName, type } = fieldSpec
-						const stdFieldUI = getStdFieldUI(fieldSpec)
+						const stdFieldUI = getStdFieldUI(fieldSpec as FieldSpec<any> & { fieldName: string })
 						const onValChange = onValChangeCtor(fieldName)
 
 						switch (type) {
-							case "choice": {
+							case "choice":
+							case "multi-choice": {
 								const possibleVals = possibleValsDict ? possibleValsDict[fieldName] : undefined
 								const possibleValsNormalized = (fieldSpec.possibleVals === "get-from-provider"
 									? (possibleVals ?? [])
@@ -98,17 +109,29 @@ export const stdRecordEditorCtors = {
 								const value = String(recordState[fieldName] ?? fieldSpec.defaultValue ?? "")
 
 								return stdFieldUI(possibleValueStrings.length < 5
-									? <InputChoiceButtons
-										onValueChanged={onValChange}
-										value={value}
-										choices={possibleValsNormalized}
-										layout={StackPanel}
-										orientation="horizontal"
-										itemStyle={{}}
-										selectedItemStyle={{}}
-										style={{ ...valueStyle }}
-									/>
-									: possibleValueStrings.length > 25
+									? (type === "choice"
+										? <InputChoiceButtons
+											onValueChanged={onValChange}
+											value={value}
+											choices={possibleValsNormalized}
+											layout={StackPanel}
+											orientation="horizontal"
+											itemStyle={{}}
+											selectedItemStyle={{}}
+											style={{ ...valueStyle }}
+										/>
+										: <InputMultiChoiceButtons
+											onValueChanged={onValChange}
+											value={value.split(",").map(_ => _.trim())}
+											choices={possibleValsNormalized}
+											layout={StackPanel}
+											orientation="horizontal"
+											itemStyle={{}}
+											selectedItemStyle={{}}
+											style={{ ...valueStyle }}
+										/>
+									)
+									: possibleValueStrings.length < 25
 										? <DropdownChoiceInput
 											onValueChanged={onValChange}
 											choices={possibleValsNormalized}
@@ -125,8 +148,14 @@ export const stdRecordEditorCtors = {
 								)
 							}
 
+
+							case "date-time-stamp":
+							case "address": {
+								return <input />
+							}
+
 							default: {
-								assert(type !== "toggle" && type !== "media")
+								// assert(type !== "toggle" && type !== "media")
 								const defaultValue = "defaultValue" in fieldSpec ? fieldSpec.defaultValue : ""
 								const value = String(recordState[fieldName] ?? defaultValue ?? "")
 
@@ -215,7 +244,7 @@ export const stdRecordEditorCtors = {
 					: <></>
 				}
 
-				<StackPanel data-key="commands" style={{ gap: "1rem" }} itemsAlignV="center" itemsAlignH="center">
+				<StackPanel data-key="commands" style={{ gap: "1rem", ...cmdsContainerStyle }} itemsAlignV="center" itemsAlignH="center">
 					{[...filter(commands, ["by-typeguard", hasValue])].map(([caption, icon, action]) => <CmdButton
 						icon={icon}
 						onClick={(e) => {
@@ -223,7 +252,8 @@ export const stdRecordEditorCtors = {
 							action(recordState as T).then(err => {
 								if (err) setProps?.({ lastError: err.description })
 							})
-						}}>
+						}}
+						style={{ ...cmdItemStyle ?? {} }}>
 						{caption}
 					</CmdButton>)}
 				</StackPanel>
@@ -238,7 +268,7 @@ export const stdRecordEditorCtors = {
 } satisfies Rec<(...args: any[]) => RecordEditorUI<any>>
 
 
-/** Generates a list of field UIs that comprise a form for editing a record */
+///** Generates a list of field UIs that comprise a form for editing a record */
 /*export function getRecordEditingFieldUIs<T extends Rec>(args
 	: {
 		fieldSpecs: FieldSpecs<T>,

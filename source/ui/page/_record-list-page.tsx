@@ -130,7 +130,7 @@ export function makeRecordListPage<T extends EntityRecordBase>(info: RecordListP
 	} satisfies PageInfo<RecordListPageArgs<T>>
 }
 
-/** Specs for a page that manages a record list */
+/** Specs for creating a page that manages a record list */
 export type RecordListPageInfo<T extends EntityRecordBase> = {
 	/** Base path, without initial slash */
 	entityBasePath: string
@@ -147,6 +147,7 @@ export type RecordListPageInfo<T extends EntityRecordBase> = {
 	 * If not provided, a default algorithm will be used to generate the filtering panel ui
 	 */
 	filterPanelUI: (| { component: RecordsFilterUI<T> } | { createFromFields: FieldSpecs<T> })
+
 	icons: { addNew: Icon, search: Icon }
 }
 
