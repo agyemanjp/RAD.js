@@ -1,5 +1,5 @@
-import { assert, except, filter, hasValue, initialCaps, isObject, type Predicate, type Rec, spaceCase, type TypeGuard } from "@agyemanjp/standard"
-import { createElement, Fragment, StackPanel, MediaSetUI, InputChoiceButtons, DropdownChoiceInput, SwitchUI, View, InputText, CmdButton, InputMultiChoiceButtons } from "@agyemanjp/fxui"
+import { assert, except, filter, hasValue, initialCaps, isArray, isObject, type Predicate, type Rec, spaceCase, type TypeGuard } from "@agyemanjp/standard"
+import { createElement, Fragment, StackPanel, MediaSetUI, InputChoiceButtons, DropdownChoiceInput, SwitchUI, View, InputText, CmdButton, InputMultiChoiceButtons, inputDomainTuples } from "@agyemanjp/fxui"
 import type { CSSProperties, Icon, MediaItem, ViewProps } from "@agyemanjp/fxui"
 
 import type { RecordEditorUI } from "./common"
@@ -94,13 +94,9 @@ export const recordEditorGenerators = {
 						switch (type) {
 							case "choice":
 							case "multi-choice": {
-								const possibleVals = possibleValsDict ? possibleValsDict[fieldName] : undefined
-								const possibleValsNormalized = (fieldSpec.possibleVals === "get-from-provider"
-									? (possibleVals ?? [])
-									: fieldSpec.possibleVals.map(v => isObject(v)
-										? { value: String(v.value), title: v.title }
-										: { value: String(v), title: String(v) }
-									)
+								const possibleValsNormalized = (fieldSpec.domain === "get-from-provider"
+									? (possibleValsDict ? possibleValsDict[fieldName]! : [])
+									: inputDomainTuples(fieldSpec.domain)
 								)
 								// console.log(`PossibleValuesNormalized: ${JSON.stringify(possibleValuesNormalized)}`)
 								const possibleValueStrings = possibleValsNormalized.map(v => v.value)
@@ -113,7 +109,7 @@ export const recordEditorGenerators = {
 										? <InputChoiceButtons
 											onValueChanged={onValChange}
 											value={value}
-											choices={possibleValsNormalized}
+											domain={possibleValsNormalized}
 											layout={StackPanel}
 											orientation="horizontal"
 											itemStyle={{}}
@@ -123,7 +119,7 @@ export const recordEditorGenerators = {
 										: <InputMultiChoiceButtons
 											onValueChanged={onValChange}
 											value={value.split(",").map(_ => _.trim())}
-											choices={possibleValsNormalized}
+											domain={possibleValsNormalized}
 											layout={StackPanel}
 											orientation="horizontal"
 											itemStyle={{}}

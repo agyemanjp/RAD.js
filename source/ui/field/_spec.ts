@@ -43,12 +43,12 @@ export type ToggleField = FieldSpecBase & {
 /** Field for choosing a value from two or more values */
 export type ChoiceField<T extends Primitive = string> = FieldSpecBase<T> & {
 	type: "choice",
-	possibleVals: "get-from-provider" | T[] | { value: T, title: string }[],
+	domain: "get-from-provider" | { values: T[] } | ({ value: T, title: string }[]),
 }
 /** Field for choosing multiple values (stored & read as comma-separated values) from two or more values. */
 export type MultiChoiceField<T extends Primitive = string> = FieldSpecBase<T> & {
 	type: "multi-choice",
-	possibleVals: "get-from-provider" | T[] | { value: T, title: string }[],
+	domain: "get-from-provider" | { values: T[] } | ({ value: T, title: string }[]),
 }
 /** Field for selecting media, stored & read as JSON formatted string of arrays of media items */
 export type MediaField = FieldSpecBase<string> & {

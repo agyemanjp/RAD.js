@@ -1,5 +1,5 @@
-import { createElement, type CSSProperties, View, StackPanel, type ViewProps, SwitchUI, DropdownChoiceInput, InputChoiceButtons, type InputHTMLAttributes, type ComponentElement, CmdButton, InputText, normalizedChoices } from "@agyemanjp/fxui"
-import { type Rec, isObject, initialCaps, spaceCase, flattenFilters, type FilterSingle } from "@agyemanjp/standard"
+import { createElement, type CSSProperties, View, StackPanel, type ViewProps, SwitchUI, DropdownChoiceInput, InputChoiceButtons, CmdButton, InputText, inputDomainTuples } from "@agyemanjp/fxui"
+import { type Rec, initialCaps, spaceCase, flattenFilters, type FilterSingle } from "@agyemanjp/standard"
 
 import { type RecordsFilterUI } from "./common"
 import { type FieldSpecs, getOrderedNamedFieldSpecs } from "../field/_spec"
@@ -63,9 +63,9 @@ export const stdRecordFilterCtors = {
 								const filterValue = String(matchedFilter?.[2] ?? fieldSpec.defaultValue)
 
 								const possibleVals = possibleValsDict ? possibleValsDict[fieldName] : undefined
-								const possibleValuesNormalized = (fieldSpec.possibleVals === "get-from-provider"
+								const possibleValuesNormalized = (fieldSpec.domain === "get-from-provider"
 									? (possibleVals ?? [])
-									: normalizedChoices(fieldSpec.possibleVals)
+									: inputDomainTuples(fieldSpec.domain)
 								)
 								// const possibleValueStrings = possibleValuesNormalized.map(v => v.value)
 
@@ -78,7 +78,7 @@ export const stdRecordFilterCtors = {
 									/>
 
 									: <InputChoiceButtons
-										choices={possibleValuesNormalized}
+										domain={possibleValuesNormalized}
 										onValueChanged={onValChangeCtor(matchedFilter)}
 										value={filterValue}
 										layout={StackPanel}

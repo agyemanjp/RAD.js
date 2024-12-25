@@ -1,6 +1,6 @@
 // import assert from "assert"
 import { except, filter, hasValue, initialCaps, isObject, type Predicate, type Rec, spaceCase, type TypeGuard } from "@agyemanjp/standard"
-import { Fragment, type CSSProperties, View, createElement, StackPanel, type ViewProps, type MediaItem, MediaSetUI, type Icon } from "@agyemanjp/fxui"
+import { Fragment, type CSSProperties, View, createElement, StackPanel, type ViewProps, type MediaItem, MediaSetUI, type Icon, inputDomainTuples } from "@agyemanjp/fxui"
 
 import type { RecordViewerUI } from "./common"
 import { type FieldSpec, type FieldSpecBase, type FieldSpecs, getOrderedNamedFieldSpecs, type MediaField, type TextField, type ToggleField } from "../field/_spec"
@@ -133,12 +133,9 @@ export const stdRecordViewCtors = {
 						switch (fieldSpec.type) {
 							case "choice": {
 								const possibleVals = possibleValsDict ? possibleValsDict[fieldName] : undefined
-								const possibleValuesNormalized = (fieldSpec.possibleVals === "get-from-provider"
+								const possibleValuesNormalized = (fieldSpec.domain === "get-from-provider"
 									? (possibleVals ?? [])
-									: fieldSpec.possibleVals.map(v => isObject(v)
-										? { value: String(v["value"]), title: v["title"] }
-										: { value: String(v), title: String(v) }
-									)
+									: inputDomainTuples(fieldSpec.domain)
 								)
 								// console.log(`PossibleValuesNormalized: ${JSON.stringify(possibleValuesNormalized)}`)
 								// console.log(`field value for toggle field "${fieldSpec.fieldName}": ${record[fieldName]}`)
