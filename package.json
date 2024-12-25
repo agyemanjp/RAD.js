@@ -1,6 +1,6 @@
 {
 	"name": "@danfortsystems/rad",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"description": "Opinionated Rapid Application Development library",
 	"type": "module",
 	"sideEffects": false,
