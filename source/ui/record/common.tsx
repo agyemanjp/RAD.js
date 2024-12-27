@@ -1,5 +1,5 @@
 import type { Component, CSSProperties, Icon } from "@agyemanjp/fxui"
-import type { FilterSingle, Rec, RecordFilter, StdError } from "@agyemanjp/standard"
+import type { FilterSingle, Rec, RecordFilter, StdError, Tuple } from "@agyemanjp/standard"
 
 // export type RecordUI<T extends Rec> = Component<{ record: T | "new", style?: CSSProperties, children?: never }>
 export type RecordViewerUI<T extends Rec> = Component<{
@@ -28,7 +28,7 @@ export type RecordsFilterUI<T extends Rec> = Component<{
 	children?: never
 }>
 
-export type PossibleValsDict<T extends Rec> = { [k in keyof T]?: { value: string, title: string }[] }
+export type PossibleValsDict<T extends Rec> = { [k in keyof T]?: Tuple<string, string>[] }
 
 export type CommandInfo<T> = [
 	caption: string,

@@ -1,5 +1,5 @@
 import type { InputHTMLAttributes, CSSProperties } from "@agyemanjp/fxui"
-import { type Rec, createRanker, hasValue, Vector, Tuple, isArray, type WeekDayName } from "@agyemanjp/standard"
+import { type Rec, createRanker, hasValue, Vector, Tuple, isArray } from "@agyemanjp/standard"
 
 import type { Validator } from "./_validators"
 import type { Primitive } from "../base"
@@ -25,9 +25,9 @@ export type FieldSpec<T extends Primitive> = (
 	T extends Date
 	? (| DateField)
 	: T extends string
-	? (TextField | EmailField | PasswordField | AddressField | ChoiceField<T> | MultiChoiceField<T> | MediaField)
+	? (TextField | EmailField | PasswordField | AddressField | ChoiceField | MultiChoiceField | MediaField)
 	: T extends number
-	? (NumericField | TimeOfDayField | ChoiceField<T> | MultiChoiceField<T>)
+	? (NumericField | NumericChoiceField | NumericMultiChoiceField | TimeOfDayField)
 	: T extends boolean
 	? (ToggleField)
 	: never
@@ -41,14 +41,24 @@ export type ToggleField = FieldSpecBase & {
 	defaultValue: boolean // initial value
 }
 /** Field for choosing a value from two or more values */
-export type ChoiceField<T extends Primitive = string> = FieldSpecBase<T> & {
+export type ChoiceField = FieldSpecBase<string> & {
 	type: "choice",
-	domain: "get-from-provider" | { values: T[] } | ({ value: T, title: string }[]),
+	domain: "get-from-provider" | Tuple<string /* value */, string /* title, empty => title same as value */>[]
+}
+/** Field for choosing a value from two or more values */
+export type NumericChoiceField = FieldSpecBase<number> & {
+	type: "num-choice",
+	domain: "get-from-provider" | Tuple<number /* value */, string /* title, empty => title same as value */>[]
 }
 /** Field for choosing multiple values (stored & read as comma-separated values) from two or more values. */
-export type MultiChoiceField<T extends Primitive = string> = FieldSpecBase<T> & {
+export type MultiChoiceField = FieldSpecBase<string> & {
 	type: "multi-choice",
-	domain: "get-from-provider" | { values: T[] } | ({ value: T, title: string }[]),
+	domain: "get-from-provider" | Tuple<string /* value */, string /* title, empty => title same as value */>[],
+}
+/** Field for choosing multiple values (stored & read as comma-separated values) from two or more values. */
+export type NumericMultiChoiceField = FieldSpecBase<number> & {
+	type: "num-multi-choice",
+	domain: "get-from-provider" | Tuple<number /* value */, string /* title, empty => title same as value */>[],
 }
 /** Field for selecting media, stored & read as JSON formatted string of arrays of media items */
 export type MediaField = FieldSpecBase<string> & {

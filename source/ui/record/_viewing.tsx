@@ -1,5 +1,5 @@
 // import assert from "assert"
-import { except, filter, hasValue, initialCaps, isObject, type Predicate, type Rec, spaceCase, type TypeGuard } from "@agyemanjp/standard"
+import { except, filter, hasValue, initialCaps, isObject, type Predicate, type Rec, spaceCase, Tuple, type TypeGuard } from "@agyemanjp/standard"
 import { Fragment, type CSSProperties, View, createElement, StackPanel, type ViewProps, type MediaItem, MediaSetUI, type Icon, inputDomainTuples } from "@agyemanjp/fxui"
 
 import type { RecordViewerUI } from "./common"
@@ -135,12 +135,12 @@ export const stdRecordViewCtors = {
 								const possibleVals = possibleValsDict ? possibleValsDict[fieldName] : undefined
 								const possibleValuesNormalized = (fieldSpec.domain === "get-from-provider"
 									? (possibleVals ?? [])
-									: inputDomainTuples(fieldSpec.domain)
+									: inputDomainTuples(fieldSpec.domain).map(_ => [String(_[0]), _[1]] as Tuple<string, string>)
 								)
 								// console.log(`PossibleValuesNormalized: ${JSON.stringify(possibleValuesNormalized)}`)
 								// console.log(`field value for toggle field "${fieldSpec.fieldName}": ${record[fieldName]}`)
 
-								const title = possibleValuesNormalized?.find(_ => _.value === record[fieldName])?.title
+								const title = possibleValuesNormalized?.find(_ => _[0] === record[fieldName])?.[1]
 								// console.log(`field title for toggle field "${fieldSpec.fieldName}": ${title}`)
 
 								const effectiveFieldValue = String(title ?? "N/A")

@@ -1,9 +1,9 @@
-import { assert, except, filter, hasValue, initialCaps, isArray, isObject, type Predicate, type Rec, spaceCase, type TypeGuard } from "@agyemanjp/standard"
+import { assert, except, filter, hasValue, initialCaps, isArray, isObject, type Predicate, type Rec, spaceCase, Tuple, type TypeGuard } from "@agyemanjp/standard"
 import { createElement, Fragment, StackPanel, MediaSetUI, InputChoiceButtons, DropdownChoiceInput, SwitchUI, View, InputText, CmdButton, InputMultiChoiceButtons, inputDomainTuples } from "@agyemanjp/fxui"
 import type { CSSProperties, Icon, MediaItem, ViewProps } from "@agyemanjp/fxui"
 
 import type { RecordEditorUI } from "./common"
-import { type AddressField, type ChoiceField, type DateField, type DateTimeStampField, type EmailField, type FieldSpec, type FieldSpecBase, type FieldSpecs, getOrderedNamedFieldSpecs, type MediaField, type MultiChoiceField, type NumericField, type PasswordField, type TextField, type ToggleField } from "../field/_spec"
+import { type AddressField, type ChoiceField, type DateField, type DateTimeStampField, type EmailField, type FieldSpec, type FieldSpecBase, type FieldSpecs, getOrderedNamedFieldSpecs, type MediaField, type MultiChoiceField, type NumericChoiceField, type NumericField, type NumericMultiChoiceField, type PasswordField, type TextField, type ToggleField } from "../field/_spec"
 import { stdFieldUICtor } from "../field/_ui"
 import type { Primitive } from "../base"
 
@@ -56,7 +56,7 @@ export const recordEditorGenerators = {
 				longTextFieldSpecs,
 				mediaFieldSpecs,
 				toggleFieldSpecs)
-		] as ((TextField | ChoiceField | MultiChoiceField | EmailField | PasswordField | AddressField | NumericField | DateField | DateTimeStampField) & {
+		] as ((TextField | ChoiceField | NumericChoiceField | NumericMultiChoiceField | MultiChoiceField | EmailField | PasswordField | AddressField | NumericField | DateField | DateTimeStampField) & {
 			fieldName: string
 		})[]
 		// const hiddenFieldSpecs = [...specsFilter<HiddenField>(spec => spec.type === "hidden")]
@@ -93,13 +93,15 @@ export const recordEditorGenerators = {
 
 						switch (type) {
 							case "choice":
-							case "multi-choice": {
+							case "num-choice":
+							case "multi-choice":
+							case "num-multi-choice": {
 								const possibleValsNormalized = (fieldSpec.domain === "get-from-provider"
 									? (possibleValsDict ? possibleValsDict[fieldName]! : [])
-									: inputDomainTuples(fieldSpec.domain)
+									: (fieldSpec.domain).map(_ => [String(_[0]), _[1]] as Tuple<string, string>)
 								)
 								// console.log(`PossibleValuesNormalized: ${JSON.stringify(possibleValuesNormalized)}`)
-								const possibleValueStrings = possibleValsNormalized.map(v => v.value)
+								const possibleValueStrings = possibleValsNormalized.map(v => String(v[0]))
 								// console.log(`possibleValueStrings for ${fieldName}: ${JSON.stringify(possibleValueStrings)}`)
 
 								const value = String(recordState[fieldName] ?? fieldSpec.defaultValue ?? "")
