@@ -146,7 +146,6 @@ export const recordEditorGenerators = {
 								)
 							}
 
-
 							case "date-time-stamp":
 							case "address": {
 								return <input />

@@ -1,6 +1,6 @@
 // Only type imports can be static?
 
-import type { StdError, Rec, ResultBasic } from "@agyemanjp/standard"
+import { type StdError, type Rec, type ResultBasic, stringifyError } from "@agyemanjp/standard"
 import { httpToStdErrorCodeMap, type Method, type StatusCode } from "@agyemanjp/http"
 
 import type { EntityRecordBase } from "../../schema"
@@ -16,12 +16,20 @@ export function makeRecordPage<T extends EntityRecordBase>(pageInfo: RecordPageI
 	return {
 		path: `${entityBasePath}-rec`,
 
-		title: (args) => (args.mode === "create"
-			? newRecordTitle
-			: args.recordResult.type === "ok"
-				? getTitle(args.recordResult.value)
-				: `Data for generating title could not be retrived: ${args.recordResult.error.errCode}`
-		),
+		title: (args) => {
+			if (args.mode === "create")
+				return newRecordTitle
+			else {
+				if (args.recordResult.type === "error") {
+					console.error(`Record for generating title could not be retrieved`)
+					console.error(stringifyError(args.recordResult.error))
+					return "?"
+				}
+				else {
+					return getTitle(args.recordResult.value)
+				}
+			}
+		},
 
 		links: (args) => {
 			const mode = args.mode
